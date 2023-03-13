@@ -1,8 +1,7 @@
 const express = require("express");
+const bodyParser = require("body-parser")
 const Pool = require('pg').Pool
 require('dotenv').config();
-
-const app = express();
 
 const PORT = process.env.PORT || 3000;
 
@@ -14,9 +13,28 @@ const pool = new Pool({
     port: 5432,
 })
 
-app.get("/", (req, res) => {
+const app = express();
 
-    pool.query('SELECT * FROM products', (error, results) => {
+app.use(express.static('public'));
+app.use(bodyParser.urlencoded({extended: true}));
+
+app.get("/api/books", (req, res) => {
+
+    pool.query('SELECT * FROM books', (error, results) => {
+
+        if (error) throw error
+
+        res.status(200).json(results.rows)
+    })
+});
+
+app.post("/api/books/create", (req, res) => {
+
+    const body = req.body;
+
+    const sql = "INSERT INTO books (title, author) VALUES ('"+body.title+"','"+body.author+"')"
+    
+    pool.query(sql, (error, results) => {
 
         if (error) throw error
 
